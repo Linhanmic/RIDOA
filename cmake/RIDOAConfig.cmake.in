@@ -1,0 +1,12 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+# 查找依赖项
+find_dependency(Eigen3 REQUIRED)
+if(@USE_CUDA@)
+    enable_language(CUDA)
+endif()
+
+# 导入RIDOA目标
+include("${CMAKE_CURRENT_LIST_DIR}/RIDOATargets.cmake")
