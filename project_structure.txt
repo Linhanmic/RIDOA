@@ -1,0 +1,49 @@
+RIDOA
+├── CMakeLists.txt
+├── README.md
+├── build.sh
+├── cmake
+│   └── RIDOAConfig.cmake.in
+├── docs
+├── examples
+├── main.py
+├── project_structure.txt
+├── requirements.txt
+├── ridoa
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   └── __init__.cpython-312.pyc
+│   ├── core
+│   │   ├── CMakeLists.txt
+│   │   ├── bindings
+│   │   │   └── pybind_module.cpp
+│   │   ├── include
+│   │   │   ├── array_processing.h
+│   │   │   ├── cuda
+│   │   │   │   ├── cuda_helper.cuh
+│   │   │   │   ├── music_cuda.cuh
+│   │   │   │   └── parameter_cuda.cuh
+│   │   │   ├── doa_config.h
+│   │   │   ├── doa_result.h
+│   │   │   ├── doa_system.h
+│   │   │   ├── find_peak.h
+│   │   │   ├── music_algorithm.h
+│   │   │   ├── parameter_space.h
+│   │   │   ├── phase_matrix.h
+│   │   │   └── types.h
+│   │   └── src
+│   │       ├── cpp
+│   │       │   ├── array_processing.cpp
+│   │       │   ├── doa_system.cpp
+│   │       │   ├── music_algorithm.cpp
+│   │       │   ├── parameter_space.cpp
+│   │       │   └── phase_matrix.cpp
+│   │       └── cuda
+│   │           ├── music_cuda.cu
+│   │           └── parameter_cuda.cu
+│   └── ridoa_core.cpython-312-x86_64-linux-gnu.so
+├── setup.py
+├── tests
+└── third_party
+    ├── eigen
+    └── pybind11
