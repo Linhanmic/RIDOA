@@ -1,5 +1,4 @@
-
-// include/doa_config.h
+// include/doa_config.h - 修改以支持HIP
 #pragma once
 
 #include <string>
@@ -33,6 +32,7 @@ public:
     int forwardSmoothingSize = 0;      // 前向平滑子阵大小，0表示不进行平滑
     bool useGPU = true;                // 是否使用GPU加速
     int gpuDeviceId = 0;               // GPU设备ID
+    std::string accelerator = "auto";  // 加速器类型：auto, cuda, hip, cpu
 
     // 获取单例实例
     static DOAConfig &getInstance()
@@ -60,5 +60,6 @@ public:
         std::cout << "  forwardSmoothingSize = " << forwardSmoothingSize << std::endl;
         std::cout << "  useGPU = " << (useGPU ? "true" : "false") << std::endl;
         std::cout << "  gpuDeviceId = " << gpuDeviceId << std::endl;
+        std::cout << "  accelerator = " << accelerator << std::endl;
     }
 };

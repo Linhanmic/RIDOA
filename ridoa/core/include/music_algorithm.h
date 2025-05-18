@@ -1,4 +1,5 @@
 // include/music_algorithm.h
+// 修改版本以支持HIP
 #pragma once
 
 #include <vector>
@@ -58,6 +59,15 @@ private:
      * @brief CUDA实现的MUSIC谱计算
      */
     std::tuple<std::vector<double>, std::vector<double>> computeSpectrumCUDA(
+        const ComplexMatrix &noiseSubspaceProduct,
+        double startAngle,
+        double endAngle,
+        double stepAngle) const;
+
+    /**
+     * @brief HIP实现的MUSIC谱计算
+     */
+    std::tuple<std::vector<double>, std::vector<double>> computeSpectrumHIP(
         const ComplexMatrix &noiseSubspaceProduct,
         double startAngle,
         double endAngle,

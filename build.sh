@@ -1,11 +1,11 @@
 #!/bin/bash
-# 自动构建脚本 - build.sh
+# 自动构建脚本 - build.sh (修改以支持HIP)
 
 set -e
 
 # 默认值
 BUILD_TYPE="Release"
-USE_CUDA="ON"
+ACCELERATOR="auto"  # 自动选择CUDA或HIP
 INSTALL_PREFIX="./install"
 BUILD_DIR="./build"
 JOBS=4
@@ -13,8 +13,16 @@ JOBS=4
 # 解析命令行参数
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --no-cuda)
-      USE_CUDA="OFF"
+    --cpu-only)
+      ACCELERATOR="cpu"
+      shift
+      ;;
+    --cuda)
+      ACCELERATOR="cuda"
+      shift
+      ;;
+    --hip)
+      ACCELERATOR="hip"
       shift
       ;;
     --debug)
@@ -40,12 +48,14 @@ while [[ $# -gt 0 ]]; do
       echo "用法: $0 [选项]"
       echo ""
       echo "选项:"
-      echo "  --no-cuda        禁用CUDA支持"
-      echo "  --debug          构建Debug版本"
-      echo "  --prefix=DIR     设置安装目录"
-      echo "  --jobs=N         设置并行构建任务数"
-      echo "  --clean          清理构建目录"
-      echo "  --help           显示此帮助信息"
+      echo "  --cpu-only        禁用GPU加速，仅使用CPU"
+      echo "  --cuda            使用CUDA加速 (NVIDIA GPU)"
+      echo "  --hip             使用HIP加速 (AMD GPU)"
+      echo "  --debug           构建Debug版本"
+      echo "  --prefix=DIR      设置安装目录"
+      echo "  --jobs=N          设置并行构建任务数"
+      echo "  --clean           清理构建目录"
+      echo "  --help            显示此帮助信息"
       exit 0
       ;;
     *)
@@ -56,6 +66,46 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# 检测可用的GPU加速类型
+detect_gpu_type() {
+  # 首先检查是否有NVIDIA GPU
+  if command -v nvidia-smi &> /dev/null; then
+    echo "检测到NVIDIA GPU，优先使用CUDA"
+    echo "cuda"
+    return
+  fi
+
+  # 然后检查是否有AMD GPU
+  if command -v rocm-smi &> /dev/null || [ -d "/opt/rocm" ]; then
+    echo "检测到AMD GPU，使用HIP"
+    echo "hip"
+    return
+  fi
+
+  # 如果都没有检测到，使用CPU
+  echo "没有检测到支持的GPU，使用CPU计算"
+  echo "cpu"
+}
+
+# 如果选择自动检测加速器类型
+if [ "$ACCELERATOR" = "auto" ]; then
+  ACCELERATOR=$(detect_gpu_type)
+fi
+
+# 设置CMake参数
+CMAKE_ARGS=()
+case $ACCELERATOR in
+  "cuda")
+    CMAKE_ARGS+=("-DUSE_CUDA=ON" "-DUSE_HIP=OFF")
+    ;;
+  "hip")
+    CMAKE_ARGS+=("-DUSE_CUDA=OFF" "-DUSE_HIP=ON")
+    ;;
+  "cpu")
+    CMAKE_ARGS+=("-DUSE_CUDA=OFF" "-DUSE_HIP=OFF")
+    ;;
+esac
+
 # 创建构建目录
 mkdir -p "$BUILD_DIR"
 cd "$BUILD_DIR"
@@ -63,12 +113,12 @@ cd "$BUILD_DIR"
 # 配置
 echo "配置 RIDOA 项目..."
 echo "  构建类型: $BUILD_TYPE"
-echo "  CUDA支持: $USE_CUDA"
+echo "  加速器: $ACCELERATOR"
 echo "  安装目录: $INSTALL_PREFIX"
 
 cmake .. \
   -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
-  -DUSE_CUDA="$USE_CUDA" \
+  "${CMAKE_ARGS[@]}" \
   -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX"
 
 # 构建

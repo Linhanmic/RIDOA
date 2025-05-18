@@ -1,4 +1,4 @@
-// include/parameter_space.h
+// include/parameter_space.h - 修改以支持HIP
 #pragma once
 
 #include <vector>
@@ -67,6 +67,18 @@ private:
      * @brief CUDA实现的参数空间投影
      */
     RealMatrix projectToParameterSpaceCUDA(
+        const std::vector<double> &peakAngles,
+        const std::vector<double> &timepoints,
+        double elevationStart,
+        double elevationEnd,
+        double azimuthStart,
+        double azimuthEnd,
+        double precision) const;
+
+    /**
+     * @brief HIP实现的参数空间投影
+     */
+    RealMatrix projectToParameterSpaceHIP(
         const std::vector<double> &peakAngles,
         const std::vector<double> &timepoints,
         double elevationStart,

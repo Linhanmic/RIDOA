@@ -1,12 +1,21 @@
-// src/cpp/parameter_space.cpp
+// src/cpp/parameter_space.cpp - 修改以支持HIP
 #include "parameter_space.h"
 #include <cmath>
 #include <algorithm>
 #include <stdexcept>
 
-// 在这里声明CUDA函数的接口
+// 在这里声明CUDA和HIP函数的接口
 #ifdef USE_CUDA
 extern Eigen::MatrixXd ParameterSpaceCUDA(
+    const std::vector<double> &peakAngles,
+    const std::vector<double> &timepoints,
+    double elevationStart, double elevationEnd,
+    double azimuthStart, double azimuthEnd,
+    double precision);
+#endif
+
+#ifdef USE_HIP
+extern Eigen::MatrixXd ParameterSpaceHIP(
     const std::vector<double> &peakAngles,
     const std::vector<double> &timepoints,
     double elevationStart, double elevationEnd,
@@ -28,10 +37,26 @@ Eigen::MatrixXd ParameterSpace::projectToParameterSpace(
     double precision) const
 {
 
-    // 根据配置决定使用CPU还是GPU
+    // 根据配置决定使用CPU、CUDA还是HIP
     if (config_.useGPU)
     {
-#ifdef USE_CUDA
+#ifdef USE_HIP
+        try
+        {
+            return projectToParameterSpaceHIP(peakAngles, timepoints,
+                                              elevationStart, elevationEnd,
+                                              azimuthStart, azimuthEnd,
+                                              precision);
+        }
+        catch (const std::exception &e)
+        {
+            std::cerr << "HIP加速失败，切换到CPU: " << e.what() << std::endl;
+            return projectToParameterSpaceCPU(peakAngles, timepoints,
+                                              elevationStart, elevationEnd,
+                                              azimuthStart, azimuthEnd,
+                                              precision);
+        }
+#elif defined(USE_CUDA)
         try
         {
             return projectToParameterSpaceCUDA(peakAngles, timepoints,
@@ -48,7 +73,7 @@ Eigen::MatrixXd ParameterSpace::projectToParameterSpace(
                                               precision);
         }
 #else
-        std::cerr << "未启用CUDA加速，使用CPU计算" << std::endl;
+        std::cerr << "未启用GPU加速，使用CPU计算" << std::endl;
 #endif
     }
 
@@ -156,6 +181,44 @@ Eigen::MatrixXd ParameterSpace::projectToParameterSpaceCUDA(
 {
 
     // 如果没有启用CUDA，直接调用CPU实现
+    return projectToParameterSpaceCPU(
+        peakAngles, timepoints,
+        elevationStart, elevationEnd,
+        azimuthStart, azimuthEnd,
+        precision);
+}
+#endif
+
+#ifdef USE_HIP
+Eigen::MatrixXd ParameterSpace::projectToParameterSpaceHIP(
+    const std::vector<double> &peakAngles,
+    const std::vector<double> &timepoints,
+    double elevationStart,
+    double elevationEnd,
+    double azimuthStart,
+    double azimuthEnd,
+    double precision) const
+{
+
+    // 调用HIP实现
+    return ParameterSpaceHIP(
+        peakAngles, timepoints,
+        elevationStart, elevationEnd,
+        azimuthStart, azimuthEnd,
+        precision);
+}
+#else
+Eigen::MatrixXd ParameterSpace::projectToParameterSpaceHIP(
+    const std::vector<double> &peakAngles,
+    const std::vector<double> &timepoints,
+    double elevationStart,
+    double elevationEnd,
+    double azimuthStart,
+    double azimuthEnd,
+    double precision) const
+{
+
+    // 如果没有启用HIP，直接调用CPU实现
     return projectToParameterSpaceCPU(
         peakAngles, timepoints,
         elevationStart, elevationEnd,

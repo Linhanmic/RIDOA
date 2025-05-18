@@ -1,3 +1,4 @@
+# 修改后的CMakeLists.txt以支持HIP编译
 cmake_minimum_required(VERSION 3.12)
 
 project(RIDOA VERSION 0.1.0 LANGUAGES CXX)
@@ -5,9 +6,17 @@ project(RIDOA VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# 硬件加速选项配置
+option(USE_CUDA "Use CUDA acceleration" ON)
+option(USE_HIP "Use HIP acceleration for AMD GPUs" OFF)
+
+# 只能选择一种硬件加速方式
+if(USE_CUDA AND USE_HIP)
+    message(WARNING "同时启用CUDA和HIP可能会导致问题，优先使用HIP")
+    set(USE_CUDA OFF)
+endif()
 
 # CUDA配置
-option(USE_CUDA "Use CUDA acceleration" ON)
 if(USE_CUDA)
     set(CMAKE_CUDA_STANDARD 17)
     set(CMAKE_CUDA_STANDARD_REQUIRED ON)
@@ -23,6 +32,25 @@ if(USE_CUDA)
     
     # 添加CUDA编译定义
     add_definitions(-DUSE_CUDA)
+endif()
+
+# HIP配置
+if(USE_HIP)
+    # 检查HIP是否可用
+    find_package(HIP)
+    if(HIP_FOUND)
+        message(STATUS "找到HIP: ${HIP_VERSION}")
+        
+        # 设置HIP编译选项
+        set(CMAKE_HIP_STANDARD 17)
+        set(CMAKE_HIP_STANDARD_REQUIRED ON)
+        enable_language(HIP)
+        
+        # 添加HIP编译定义
+        add_definitions(-DUSE_HIP)
+    else()
+        message(FATAL_ERROR "未找到HIP，无法启用HIP加速")
+    endif()
 endif()
 
 # 设置安装目录 (如果未指定，默认为系统目录)
@@ -41,6 +69,7 @@ endif()
 # 输出构建信息
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "CUDA enabled: ${USE_CUDA}")
+message(STATUS "HIP enabled: ${USE_HIP}")
 message(STATUS "Installation directory: ${CMAKE_INSTALL_PREFIX}")
 
 # 添加第三方库
