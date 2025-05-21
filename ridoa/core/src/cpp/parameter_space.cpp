@@ -273,6 +273,29 @@ std::vector<std::pair<int, int>> ParameterSpace::findPeaks(
             }
         }
     }
+    // 对于距离小于config_.minDistance的峰值进行合并
+    std::vector<std::pair<int, int>> mergedPeaks;
+    for (const auto &peak : peaks)
+    {
+        bool isMerged = false;
+        for (auto &mergedPeak : mergedPeaks)
+        {
+            if (std::abs(peak.first - mergedPeak.first) < config_.minDistance &&
+                std::abs(peak.second - mergedPeak.second) < config_.minDistance)
+            {
+                // 合并峰值
+                mergedPeak.first = (mergedPeak.first + peak.first) / 2;
+                mergedPeak.second = (mergedPeak.second + peak.second) / 2;
+                isMerged = true;
+                break;
+            }
+        }
+        if (!isMerged)
+        {
+            mergedPeaks.push_back(peak);
+        }
+    }
+    peaks = mergedPeaks;
 
     // 按照峰值大小排序，保留最大的config_.maxSources个峰值
     if (peaks.size() > config_.maxSources)

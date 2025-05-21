@@ -37,8 +37,8 @@ def generate_test_signal(doa_system):
         ValueError: 当信号生成失败时抛出
     """
     # 设置目标角度参数
-    elevations = [30.0, 45.0]  # 俯仰角(度)
-    azimuths = [60.0, 90.0]    # 方位角(度)
+    elevations = [30.0, 47.0]  # 俯仰角(度)
+    azimuths = [60.0, 98.0]    # 方位角(度)
     duration = 1.0             # 信号时长(秒)
     snr_db = 20.0              # 信噪比(dB)
 

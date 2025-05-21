@@ -3,6 +3,7 @@
 #include <cmath>
 #include <algorithm>
 #include <stdexcept>
+#include <thread>
 
 // 在这里声明CUDA和HIP函数的接口
 #ifdef USE_CUDA
@@ -145,6 +146,7 @@ std::tuple<std::vector<double>, std::vector<double>> MusicAlgorithm::computeSpec
     double stepAngle) const
 {
     // 如果没有启用CUDA，直接调用CPU实现
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     return computeSpectrumCPU(noiseSubspaceProduct, startAngle, endAngle, stepAngle);
 }
 #endif
@@ -167,6 +169,7 @@ std::tuple<std::vector<double>, std::vector<double>> MusicAlgorithm::computeSpec
     double stepAngle) const
 {
     // 如果没有启用HIP，直接调用CPU实现
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     return computeSpectrumCPU(noiseSubspaceProduct, startAngle, endAngle, stepAngle);
 }
 #endif

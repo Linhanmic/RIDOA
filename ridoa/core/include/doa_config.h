@@ -33,6 +33,7 @@ public:
     bool useGPU = true;                // 是否使用GPU加速
     int gpuDeviceId = 0;               // GPU设备ID
     std::string accelerator = "auto";  // 加速器类型：auto, cuda, hip, cpu
+    int minDistance = 5;               // 峰值合并最小距离
 
     // 获取单例实例
     static DOAConfig &getInstance()
