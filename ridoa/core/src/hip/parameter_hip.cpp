@@ -75,12 +75,6 @@ RealMatrix ParameterSpaceHIP(
     double azimuthEnd,
     double precision)
 {
-    // 检查是否有可用的HIP设备
-    if (!initializeHIP(DOAConfig::getInstance().gpuDeviceId))
-    {
-        throw std::runtime_error("无法初始化HIP设备，无法执行GPU加速");
-    }
-
     int numPeaks = peakAngles.size();
     if (numPeaks == 0 || peakAngles.size() != timepoints.size())
     {

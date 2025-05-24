@@ -22,9 +22,10 @@ elseif(HIP_PLATFORM STREQUAL "nvidia")
     set(USE_CUDA ON)
     message(STATUS "HIP_PLATFORM: ${HIP_PLATFORM}")
     enable_language(CUDA)
-    find_package(CUDA REQUIRED)
-    set(HIP_LIBRARIES ${CUDA_LIBRARIES})
-    set(HIP_INCLUDE_DIRS ${CUDA_INCLUDE_DIRS})
+    # 使用现代CMake CUDA支持，不再使用已弃用的FindCUDA模块
+    find_package(CUDAToolkit REQUIRED)
+    set(HIP_LIBRARIES CUDA::cudart)
+    set(HIP_INCLUDE_DIRS ${CUDAToolkit_INCLUDE_DIRS})
 endif()
 
 # 硬件加速选项配置

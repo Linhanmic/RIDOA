@@ -80,12 +80,6 @@ std::tuple<std::vector<double>, std::vector<double>> computeMusicSpectrumHIP(
     double endAngle,
     double stepAngle)
 {
-    // 检查是否有可用的HIP设备
-    if (!initializeHIP(DOAConfig::getInstance().gpuDeviceId))
-    {
-        throw std::runtime_error("无法初始化HIP设备，无法执行GPU加速");
-    }
-
     int numAngles = static_cast<int>((endAngle - startAngle) / stepAngle) + 1;
     std::vector<double> spectrum(numAngles);
     std::vector<double> angles(numAngles);
