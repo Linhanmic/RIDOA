@@ -1,6 +1,11 @@
 # 修改后的ridoa/core/CMakeLists.txt以支持HIP编译
 cmake_minimum_required(VERSION 3.12)
 
+if(USE_HIP)
+set(CMAKE_CXX_COMPILER ${HIP_HIPCC_EXECUTABLE})
+set(CMAKE_CXX_LINKER   ${HIP_HIPCC_EXECUTABLE})
+endif()
+
 # 包含目录
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -35,7 +40,6 @@ if(USE_HIP)
     )
     # 针对HIP文件的特殊编译选项
     set_source_files_properties(${HIP_SOURCES} PROPERTIES HIP_SOURCE_PROPERTY_FORMAT TRUE)
-    set_source_files_properties(${HIP_SOURCES} PROPERTIES LANGUAGE HIP)
 endif()
 
 # 创建静态库
@@ -52,7 +56,7 @@ target_include_directories(ridoa_core_static PUBLIC
 
 # 如果使用CUDA，添加相关链接和定义
 if(USE_CUDA)
-    target_link_libraries(ridoa_core_static PRIVATE ${CUDA_LIBRARIES})
+    target_link_libraries(ridoa_core_static PRIVATE ${HIP_LIBRARIES})
     target_compile_definitions(ridoa_core_static PRIVATE USE_CUDA)
 
     # 添加CUDA特定编译选项
@@ -66,11 +70,11 @@ endif()
 
 # 如果使用HIP，添加相关链接和定义
 if(USE_HIP)
-    target_link_libraries(ridoa_core_static PRIVATE hip::device)
+    target_link_libraries(ridoa_core_static PRIVATE ${HIP_LIBRARIES})
     target_compile_definitions(ridoa_core_static PRIVATE USE_HIP)
     
     # 添加HIP特定编译选项
-    target_compile_options(ridoa_core_static PRIVATE $<$<COMPILE_LANGUAGE:HIP>:--amdgpu-target=gfx1030>)
+    # target_compile_options(ridoa_core_static PRIVATE $<$<COMPILE_LANGUAGE:HIP>:--amdgpu-target=gfx1030>)
 endif()
 
 # Python绑定部分

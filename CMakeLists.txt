@@ -6,6 +6,27 @@ project(RIDOA VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+find_package(HIP REQUIRED)
+if (NOT DEFINED ROCM_PATH )
+     set ( ROCM_PATH "/opt/rocm"  CACHE STRING "Default ROCM installation directory." )
+endif ()
+
+# Search for rocm in common locations
+list(APPEND CMAKE_PREFIX_PATH ${ROCM_PATH}/hip ${ROCM_PATH})
+if(HIP_PLATFORM STREQUAL "amd")
+    set(USE_HIP ON)
+    message(STATUS "HIP_PLATFORM: ${HIP_PLATFORM}")
+    find_package(hip REQUIRED)
+    set(HIP_LIBRARIES hip::host)
+elseif(HIP_PLATFORM STREQUAL "nvidia")
+    set(USE_CUDA ON)
+    message(STATUS "HIP_PLATFORM: ${HIP_PLATFORM}")
+    enable_language(CUDA)
+    find_package(CUDA REQUIRED)
+    set(HIP_LIBRARIES ${CUDA_LIBRARIES})
+    set(HIP_INCLUDE_DIRS ${CUDA_INCLUDE_DIRS})
+endif()
+
 # 硬件加速选项配置
 option(USE_CUDA "Use CUDA acceleration" ON)
 option(USE_HIP "Use HIP acceleration for AMD GPUs" OFF)
@@ -20,14 +41,8 @@ endif()
 if(USE_CUDA)
     set(CMAKE_CUDA_STANDARD 17)
     set(CMAKE_CUDA_STANDARD_REQUIRED ON)
-    enable_language(CUDA)
-    
-    # 检测CUDA版本和可用架构
-    include(CheckLanguage)
-    check_language(CUDA)
-    
+
     # 设置CUDA架构
-    # 可根据目标硬件调整，下面设置支持较广泛的架构
     set(CMAKE_CUDA_ARCHITECTURES 86)
     
     # 添加CUDA编译定义
@@ -36,21 +51,8 @@ endif()
 
 # HIP配置
 if(USE_HIP)
-    # 检查HIP是否可用
-    find_package(HIP)
-    if(HIP_FOUND)
-        message(STATUS "找到HIP: ${HIP_VERSION}")
-        
-        # 设置HIP编译选项
-        set(CMAKE_HIP_STANDARD 17)
-        set(CMAKE_HIP_STANDARD_REQUIRED ON)
-        enable_language(HIP)
-        
-        # 添加HIP编译定义
-        add_definitions(-DUSE_HIP)
-    else()
-        message(FATAL_ERROR "未找到HIP，无法启用HIP加速")
-    endif()
+    #  添加HIP编译定义
+    add_definitions(-DUSE_HIP)
 endif()
 
 # 设置安装目录 (如果未指定，默认为系统目录)

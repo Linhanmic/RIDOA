@@ -396,7 +396,6 @@ class RIDOAApp(QMainWindow):
                     self.precision = 1.0
                     self.accumulatorThreshold = 0.5
                     self.spectrumThreshold = 0.5
-                    self.fastSnapshots = 200
                     self.maxSources = 2
                     self.forwardSmoothingSize = 0
                     self.useGPU = True
